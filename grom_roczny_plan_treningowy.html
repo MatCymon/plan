@@ -1,0 +1,806 @@
+
+<h2 class="sr-only">Roczny plan treningowy przygotowania do selekcji GROM dla 15-latka</h2>
+
+<style>
+  :root {
+    --c-phase1: #1D9E75; --c-phase1-light: #E1F5EE; --c-phase1-dark: #085041;
+    --c-phase2: #185FA5; --c-phase2-light: #E6F1FB; --c-phase2-dark: #042C53;
+    --c-phase3: #BA7517; --c-phase3-light: #FAEEDA; --c-phase3-dark: #412402;
+    --c-phase4: #993556; --c-phase4-light: #FBEAF0; --c-phase4-dark: #4B1528;
+    --c-warn: #BA7517; --c-safe: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans, sans-serif); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    margin: 2rem 0 .75rem;
+  }
+
+  /* ─── HEADER ─── */
+  .hero {
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .hero-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .hero-sub {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .badge {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+  }
+  .badge-green { background: var(--c-phase1-light); color: var(--c-phase1-dark); }
+  .badge-blue  { background: var(--c-phase2-light); color: var(--c-phase2-dark); }
+  .badge-amber { background: var(--c-phase3-light); color: var(--c-phase3-dark); }
+  .badge-pink  { background: var(--c-phase4-light); color: var(--c-phase4-dark); }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 0 1.5rem;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn.active {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-text-primary);
+  }
+  .tab-btn:hover { color: var(--color-text-primary); }
+
+  .tab-panel { display: none; padding: 1.25rem 1.5rem 1.5rem; }
+  .tab-panel.active { display: block; }
+
+  /* ─── PHASE TIMELINE ─── */
+  .phases { display: flex; flex-direction: column; gap: 10px; }
+  .phase-card {
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .phase-header:hover { background: var(--color-background-secondary); }
+  .phase-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .phase-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+  .phase-months { font-size: 12px; color: var(--color-text-secondary); }
+  .phase-chevron { font-size: 12px; color: var(--color-text-tertiary); transition: transform .2s; }
+  .phase-chevron.open { transform: rotate(180deg); }
+  .phase-body {
+    display: none;
+    padding: 0 16px 14px;
+    border-top: 0.5px solid var(--color-border-tertiary);
+  }
+  .phase-body.open { display: block; }
+  .phase-goal {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin: 10px 0 10px;
+    line-height: 1.6;
+  }
+  .phase-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .phase-col-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .phase-item { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; line-height: 1.5; padding-left: 10px; position: relative; }
+  .phase-item::before { content: "—"; position: absolute; left: 0; color: var(--color-text-tertiary); }
+
+  /* Milestone bar */
+  .milestones {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 1rem 0 .5rem;
+    overflow: hidden;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+  .ms-seg {
+    flex: 1;
+    height: 6px;
+  }
+
+  /* ─── WEEK TABLE ─── */
+  .week-grid { display: flex; flex-direction: column; gap: 8px; }
+  .day-card {
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    overflow: hidden;
+    background: var(--color-background-primary);
+  }
+  .day-card.rest { opacity: .65; }
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--color-background-secondary);
+  }
+  .day-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .day-type {
+    font-size: 12px;
+    padding: 2px 9px;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .type-cali { background: var(--c-phase3-light); color: var(--c-phase3-dark); }
+  .type-run  { background: var(--c-phase2-light); color: var(--c-phase2-dark); }
+  .type-swim { background: var(--c-phase1-light); color: var(--c-phase1-dark); }
+  .type-regen { background: #F1EFE8; color: #2C2C2A; }
+  .type-rest { background: var(--color-background-secondary); color: var(--color-text-tertiary); border: 0.5px solid var(--color-border-tertiary); }
+  .day-tag { font-size: 11px; color: var(--color-text-tertiary); margin-left: auto; }
+
+  .day-body { padding: 10px 14px; }
+  .day-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 6px; }
+  .ex-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .ex-pill {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-secondary);
+    background: var(--color-background-secondary);
+  }
+  .day-note {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ─── PROGRESSION TABLE ─── */
+  .prog-table-wrap { overflow-x: auto; }
+  .prog-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .prog-table th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    padding: 6px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    white-space: nowrap;
+  }
+  .prog-table td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+  .prog-table tr:last-child td { border-bottom: none; }
+  .prog-table tr:hover td { background: var(--color-background-secondary); }
+  .week-label { font-weight: 500; color: var(--color-text-primary); white-space: nowrap; }
+  .deload-row td { color: var(--color-text-tertiary); font-style: italic; }
+  .deload-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 20px;
+    background: var(--c-phase3-light);
+    color: var(--c-phase3-dark);
+    margin-left: 4px;
+  }
+
+  /* ─── BENCHMARKS ─── */
+  .bench-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .bench-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: .9rem 1rem;
+  }
+  .bench-label { font-size: 11px; color: var(--color-text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .bench-row { display: flex; justify-content: space-between; align-items: baseline; gap: 4px; margin-top: 4px; }
+  .bench-now { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .bench-target { font-size: 12px; color: var(--color-text-tertiary); }
+  .bench-arrow { color: var(--c-phase4); font-size: 13px; }
+  .bench-bar-bg { height: 4px; background: var(--color-border-tertiary); border-radius: 4px; margin-top: 8px; }
+  .bench-bar { height: 4px; border-radius: 4px; }
+
+  /* ─── SAFETY ─── */
+  .safety-list { display: flex; flex-direction: column; gap: 8px; }
+  .safety-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-secondary);
+  }
+  .safety-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+  .safety-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .safety-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; margin-top: 2px; }
+
+  @media (max-width: 480px) {
+    .phase-cols { grid-template-columns: 1fr; }
+    .bench-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="hero">
+  <div class="hero-title">Plan przygotowania do selekcji JW GROM</div>
+  <div class="hero-sub">Profil: 15 lat · kalistenika 2×/tydz · bieg 7+ km · 3 km w 13-14 min · pływanie 200 m</div>
+  <div class="badges">
+    <span class="badge badge-green">Etap I — Baza tlenowa</span>
+    <span class="badge badge-blue">Etap II — Wytrzymałość</span>
+    <span class="badge badge-amber">Etap III — Intensywność</span>
+    <span class="badge badge-pink">Etap IV — Integracja</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('plan')">Roczny plan</button>
+  <button class="tab-btn" onclick="showTab('week')">Tydzień treningowy</button>
+  <button class="tab-btn" onclick="showTab('prog')">Progresja</button>
+  <button class="tab-btn" onclick="showTab('bench')">Benchmarki GROM</button>
+  <button class="tab-btn" onclick="showTab('safety')">Zasady bezpieczeństwa</button>
+</div>
+
+<!-- ══════════ TAB: PLAN ══════════ -->
+<div class="tab-panel active" id="tab-plan">
+  <div class="milestones" title="Wizualizacja rozkładu faz w roku">
+    <div class="ms-seg" style="background:var(--c-phase1)"></div>
+    <div class="ms-seg" style="background:var(--c-phase1)"></div>
+    <div class="ms-seg" style="background:var(--c-phase1)"></div>
+    <div class="ms-seg" style="background:var(--c-phase2)"></div>
+    <div class="ms-seg" style="background:var(--c-phase2)"></div>
+    <div class="ms-seg" style="background:var(--c-phase2)"></div>
+    <div class="ms-seg" style="background:var(--c-phase3)"></div>
+    <div class="ms-seg" style="background:var(--c-phase3)"></div>
+    <div class="ms-seg" style="background:var(--c-phase3)"></div>
+    <div class="ms-seg" style="background:var(--c-phase4)"></div>
+    <div class="ms-seg" style="background:var(--c-phase4)"></div>
+    <div class="ms-seg" style="background:var(--c-phase4)"></div>
+  </div>
+  <p class="day-note" style="margin-bottom:12px">Kliknij fazę, żeby rozwinąć szczegóły</p>
+  <div class="phases">
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:var(--c-phase1)"></div>
+        <div class="phase-title">Etap I — Budowanie bazy tlenowej</div>
+        <div class="phase-months">Mies. 1–3</div>
+        <div class="phase-chevron open"><i class="ti ti-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div class="phase-body open">
+        <div class="phase-goal">Priorytet: zbudowanie silnego fundamentu tlenowego i ustalenie nawyku treningowego. Twój 3 km = 13-14 min, cel etapu to zejście poniżej 13 min. Pływanie: rozbudowa techniki i dystansu do 600 m nieprzerwanego kraula.</div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wtorek)</div>
+            <div class="phase-item">Strefa 2 (możesz mówić zdaniami) — 80% treningów</div>
+            <div class="phase-item">Dystans: 5–8 km, tempo ~6:00–6:30 min/km</div>
+            <div class="phase-item">Reguła 10%: wzrost dystansu max. 10% tygodniowo</div>
+            <div class="phase-item">Co 4. tydzień — tydzień roztrenowania (–30% dystansu)</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czwartek)</div>
+            <div class="phase-item">Skupienie na technice kraula — pozycja ciała, oddech</div>
+            <div class="phase-item">Interwały: 4–8 × 50 m z aktywną przerwą 30 s</div>
+            <div class="phase-item">Pod koniec etapu: ciągły 400 m kraulem</div>
+            <div class="phase-item">Brak presji czasowej — priorytet technika</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:var(--c-phase2)"></div>
+        <div class="phase-title">Etap II — Wytrzymałość specjalna</div>
+        <div class="phase-months">Mies. 4–6</div>
+        <div class="phase-chevron"><i class="ti ti-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-goal">Priorytet: wprowadzenie intensywności, pierwsze biegi tempowe i marszobiegi. Bieg 5 km poniżej 22 min. Pływanie 200 m kraulem pod ciśnieniem czasowym (cel: 4:00). Pierwsze próby pływania pod wodą i różnych stylów.</div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wtorek)</div>
+            <div class="phase-item">80% strefa 2 + 20% tempo/interwały</div>
+            <div class="phase-item">1× w miesiącu marszoobieg 8–12 km z plecakiem 5 kg</div>
+            <div class="phase-item">Pierwsze interwały: 6 × 400 m w wysiłku 8/10</div>
+            <div class="phase-item">Bieg 5 km pod czas — test co 4 tygodnie</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czwartek)</div>
+            <div class="phase-item">800 m mieszane — kraul + grzbiet</div>
+            <div class="phase-item">Elementy pływania pod wodą (oddechy, dynamika)</div>
+            <div class="phase-item">Trening czasowy 200 m — cel pod 4:00</div>
+            <div class="phase-item">Ćwiczenia z nurkowaniem na dystans</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:var(--c-phase3)"></div>
+        <div class="phase-title">Etap III — Siła wytrzymałościowa</div>
+        <div class="phase-months">Mies. 7–9</div>
+        <div class="phase-chevron"><i class="ti ti-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-goal">Priorytet: wzrost intensywności i przygotowanie do kombinowanych wysiłków. Bieg 5 km poniżej 21 min. Pływanie 400 m różnymi stylami bez zatrzymania. Regularne marszobiegi z obciążeniem.</div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wtorek)</div>
+            <div class="phase-item">Treningi progowe — biegi 20–25 min w strefie 4</div>
+            <div class="phase-item">Marszobieg 15 km z plecakiem 8 kg raz w miesiącu</div>
+            <div class="phase-item">Fartlek 30 min — zmienne tempo</div>
+            <div class="phase-item">Bieg terenowy w zróżnicowanym terenie</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czwartek)</div>
+            <div class="phase-item">400 m kraulem pod presją czasową</div>
+            <div class="phase-item">Trening stylem grzbietowym i żabką</div>
+            <div class="phase-item">Symulacja testu GROM: 200 m w czasie poniżej 4:00</div>
+            <div class="phase-item">Pływanie pod wodą 15–20 m ciągiem</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:var(--c-phase4)"></div>
+        <div class="phase-title">Etap IV — Integracja i testy kontrolne</div>
+        <div class="phase-months">Mies. 10–12</div>
+        <div class="phase-chevron"><i class="ti ti-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-goal">Priorytet: połączenie wszystkich elementów. Symulacja dnia selekcji — sekwencja ćwiczeń + bieg + pływanie + kalistenika. Pierwsze testy kontrolne pod normy GROM. Planowanie kolejnego roku.</div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wtorek)</div>
+            <div class="phase-item">Bieg 5 km — cel: poniżej 21 min</div>
+            <div class="phase-item">Bieg 3 km — cel: poniżej 12:30 min</div>
+            <div class="phase-item">Marszobieg 20 km z plecakiem 10 kg</div>
+            <div class="phase-item">Bieg wahadłowy 10×10 m — ćwiczenie techniki</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czwartek)</div>
+            <div class="phase-item">Test 200 m — cel: poniżej 3:50 min</div>
+            <div class="phase-item">400 m mixem stylów</div>
+            <div class="phase-item">Skok na głowę + 50 m kraulem</div>
+            <div class="phase-item">Pływanie pod wodą 20 m</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ TAB: TYDZIEŃ ══════════ -->
+<div class="tab-panel" id="tab-week">
+  <p class="day-note" style="margin-bottom:12px">Tydzień Etapu I (tygodnie 1–12). Twoja kalistenika 2× w tygodniu już jest — tu dodaję 2 nowe sesje.</p>
+  <div class="week-grid">
+
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-name">Poniedziałek</div>
+        <div class="day-type type-cali">Kalistenika</div>
+        <div class="day-tag">Twoja sesja</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">Twój własny trening kalisteniczny — kontynuuj jak dotychczas.</div>
+        <div class="ex-list">
+          <span class="ex-pill">Podciągnięcia</span>
+          <span class="ex-pill">Pompki</span>
+          <span class="ex-pill">Dipy</span>
+          <span class="ex-pill">Wejścia na linę</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-name">Wtorek</div>
+        <div class="day-type type-run">Bieg tlenowy</div>
+        <div class="day-tag">Nowa sesja · 45–55 min</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">5 minut marszu jako rozgrzewka. Potem bieg ciągły 5 km w strefie 2 — tempo, w którym możesz spokojnie rozmawiać. To buduję silnik tlenowy, bez niego nie ma mowy o selekcji. 5 min marszu na schłodzenie.</div>
+        <div class="ex-list">
+          <span class="ex-pill">Rozgrzewka 5 min marsz</span>
+          <span class="ex-pill">Bieg 5 km · ~6:10 min/km</span>
+          <span class="ex-pill">Strefa 2 (test rozmowy)</span>
+          <span class="ex-pill">Schłodzenie 5 min</span>
+          <span class="ex-pill">Stretching dynamiczny</span>
+        </div>
+        <div class="day-note">Tydzień 1: 5 km → tydzień 4: 7 km. Co 4. tydzień — deload (–30%).</div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-name">Środa</div>
+        <div class="day-type type-cali">Kalistenika</div>
+        <div class="day-tag">Twoja sesja</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">Twój własny trening kalisteniczny. Jeśli nogi obolałe po wtorku — zmniejsz intensywność, ale nie odpuszczaj.</div>
+        <div class="ex-list">
+          <span class="ex-pill">Podciągnięcia</span>
+          <span class="ex-pill">Pompki</span>
+          <span class="ex-pill">Dipy</span>
+          <span class="ex-pill">Core</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-name">Czwartek</div>
+        <div class="day-type type-swim">Pływanie</div>
+        <div class="day-tag">Nowa sesja · 50 min</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">Całość skupiona na technice kraula — GROM wymaga 200 m w 4:30 lub szybciej. Zanim zaczniesz bić rekordy, naucz się pływać ekonomicznie. Rozgrzewka 100 m spokojnym stylem.</div>
+        <div class="ex-list">
+          <span class="ex-pill">Rozgrzewka 100 m</span>
+          <span class="ex-pill">Dryle techniczne · 6×25 m</span>
+          <span class="ex-pill">Interwały 4×50 m · przerwa 30 s</span>
+          <span class="ex-pill">Kraul ciągły 200 m</span>
+          <span class="ex-pill">Schłodzenie 50 m grzbiet</span>
+        </div>
+        <div class="day-note">Tydzień 1: 4×50 m → tydzień 12: 8×50 m lub 4×100 m. Priorytet = technika, nie czas.</div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-name">Piątek</div>
+        <div class="day-type type-regen">Regeneracja aktywna</div>
+        <div class="day-tag">Obowiązkowe · 20–30 min</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">Nie jest to dzień wolny — to inwestycja w stawy i mięśnie. W wieku 15 lat ciało rośnie, a regeneracja decyduje o tym, czy za 5 lat będziesz sprawny czy z kontuzjami.</div>
+        <div class="ex-list">
+          <span class="ex-pill">Stretching statyczny 15 min</span>
+          <span class="ex-pill">Pośladki · udo · łydki</span>
+          <span class="ex-pill">Rotacje biodrowe</span>
+          <span class="ex-pill">Ćwiczenia mobilności barków</span>
+          <span class="ex-pill">Rollowanie (opcjonalnie)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card rest">
+      <div class="day-header">
+        <div class="day-name">Sobota</div>
+        <div class="day-type type-rest">Odpoczynek</div>
+        <div class="day-tag">Spacer maks. 5 km</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">Aktywny odpoczynek — długi spacer, rower rekreacyjny. Żadnego treningu siłowego ani intensywnych biegów.</div>
+      </div>
+    </div>
+
+    <div class="day-card rest">
+      <div class="day-header">
+        <div class="day-name">Niedziela</div>
+        <div class="day-type type-rest">Pełny odpoczynek</div>
+        <div class="day-tag">Sen · jedzenie · relaks</div>
+      </div>
+      <div class="day-body">
+        <div class="day-desc">Sen 8–9 godzin. To kiedy ciało naprawdę rośnie i adaptuje się do treningu. Bez wstydu — odpoczynek jest częścią planu.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ TAB: PROGRESJA ══════════ -->
+<div class="tab-panel" id="tab-prog">
+  <div class="prog-table-wrap">
+  <table class="prog-table">
+    <thead>
+      <tr>
+        <th>Tydzień</th>
+        <th>Bieg (wtorek)</th>
+        <th>Pływanie (czwartek)</th>
+        <th>Uwaga</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="week-label">T1</td>
+        <td>5 km · 6:10 min/km</td>
+        <td>4×50 m + 200 m ciągły</td>
+        <td>Kalibracja tempa</td>
+      </tr>
+      <tr>
+        <td class="week-label">T2</td>
+        <td>5,5 km · 6:10 min/km</td>
+        <td>5×50 m + 200 m ciągły</td>
+        <td>+10% dystansu biegu</td>
+      </tr>
+      <tr>
+        <td class="week-label">T3</td>
+        <td>6 km · 6:00 min/km</td>
+        <td>6×50 m lub 3×100 m</td>
+        <td>Pierwsza zmiana serii pływania</td>
+      </tr>
+      <tr class="deload-row">
+        <td class="week-label">T4 <span class="deload-badge">deload</span></td>
+        <td>4 km · spokojnie</td>
+        <td>3×50 m + 100 m ciągły</td>
+        <td>Regeneracja — bez przyspieszania</td>
+      </tr>
+      <tr>
+        <td class="week-label">T5</td>
+        <td>6,5 km · 5:55 min/km</td>
+        <td>6×50 m + 300 m ciągły</td>
+        <td>Test techniki kraula</td>
+      </tr>
+      <tr>
+        <td class="week-label">T6</td>
+        <td>7 km · 5:55 min/km</td>
+        <td>4×100 m · przerwa 45 s</td>
+        <td>Zmiana formatu interwałów</td>
+      </tr>
+      <tr>
+        <td class="week-label">T7</td>
+        <td>7,5 km · 5:50 min/km</td>
+        <td>5×100 m + 200 m na czas</td>
+        <td>Pierwszy pomiar 200 m</td>
+      </tr>
+      <tr class="deload-row">
+        <td class="week-label">T8 <span class="deload-badge">deload</span></td>
+        <td>5 km · 6:20 min/km</td>
+        <td>4×50 m + grzbiet 100 m</td>
+        <td>Regeneracja + nowy styl</td>
+      </tr>
+      <tr>
+        <td class="week-label">T9</td>
+        <td>8 km · 5:50 min/km</td>
+        <td>6×100 m · przerwa 40 s</td>
+        <td>Wzrost dystansu obu sesji</td>
+      </tr>
+      <tr>
+        <td class="week-label">T10</td>
+        <td>8 km · interwały 6×400 m</td>
+        <td>400 m ciągły kraulem</td>
+        <td>Pierwszy dystans 400 m bez stopu</td>
+      </tr>
+      <tr>
+        <td class="week-label">T11</td>
+        <td>9 km · 5:45 min/km</td>
+        <td>6×100 m + pływanie pod wodą</td>
+        <td>Pierwsze ćwicz. podwodne</td>
+      </tr>
+      <tr class="deload-row">
+        <td class="week-label">T12 <span class="deload-badge">test</span></td>
+        <td>Bieg 5 km na czas</td>
+        <td>200 m kraulem na czas</td>
+        <td>Test kontrolny końca Etapu I</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ══════════ TAB: BENCHMARKI ══════════ -->
+<div class="tab-panel" id="tab-bench">
+  <p class="day-note" style="margin-bottom:16px">Twój aktualny poziom vs. wymagania selekcji GROM. Pasek pokazuje orientacyjne wypełnienie celu.</p>
+  <div class="bench-grid">
+
+    <div class="bench-card">
+      <div class="bench-label">Podciągnięcia</div>
+      <div class="bench-row">
+        <div class="bench-now">8–9 <span style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">powt.</span></div>
+        <div class="bench-target">cel: 18–20 →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:45%;background:var(--c-phase2)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Pompki</div>
+      <div class="bench-row">
+        <div class="bench-now">30+ <span style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">powt.</span></div>
+        <div class="bench-target">cel: 60–70 →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:46%;background:var(--c-phase2)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Bieg 3 km</div>
+      <div class="bench-row">
+        <div class="bench-now">13–14 <span style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">min</span></div>
+        <div class="bench-target">cel: 11:30 →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:40%;background:var(--c-phase3)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Bieg 5 km</div>
+      <div class="bench-row">
+        <div class="bench-now">~26–27 <span style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">min</span></div>
+        <div class="bench-target">cel: poniżej 20 →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:35%;background:var(--c-phase3)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Pływanie 200 m</div>
+      <div class="bench-row">
+        <div class="bench-now">~5:00 <span style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">min</span></div>
+        <div class="bench-target">cel: poniżej 4:30 →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:52%;background:var(--c-phase1)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Marsz z plecakiem</div>
+      <div class="bench-row">
+        <div class="bench-now">brak</div>
+        <div class="bench-target">cel: 50 km / 25 kg →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:5%;background:var(--c-phase4)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Dipy</div>
+      <div class="bench-row">
+        <div class="bench-now">tak <span style="font-size:12px;font-weight:400;color:var(--color-text-tertiary)">+ powt.</span></div>
+        <div class="bench-target">cel: 20–25 →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:50%;background:var(--c-phase2)"></div></div>
+    </div>
+
+    <div class="bench-card">
+      <div class="bench-label">Wejście na linę</div>
+      <div class="bench-row">
+        <div class="bench-now">tak</div>
+        <div class="bench-target">cel: technika + szybkość →</div>
+      </div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:55%;background:var(--c-phase1)"></div></div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:1.25rem;padding:12px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-secondary);line-height:1.6">
+    Pamiętaj: wymagania minimalne GROM to dolna granica. Instruktorzy priorytetowo traktują kandydatów, którzy wyraźnie przekraczają normy. Cel: osiągnąć +20–30% powyżej minimalnych progów przed aplikacją.
+  </div>
+</div>
+
+<!-- ══════════ TAB: SAFETY ══════════ -->
+<div class="tab-panel" id="tab-safety">
+  <div class="safety-list">
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-trending-up" aria-hidden="true" style="color:var(--c-phase2)"></i></div>
+      <div>
+        <div class="safety-title">Reguła 10% — żelazna zasada</div>
+        <div class="safety-desc">Tygodniowy dystans biegu rośnie maksymalnie 10% w stosunku do poprzedniego tygodnia. Większy skok = przeciążenie piszczelowe, stres kości, złamania zmęczeniowe. Co 4. tydzień to deload, czyli –30% objętości.</div>
+      </div>
+    </div>
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-heart-rate-monitor" aria-hidden="true" style="color:var(--c-phase4)"></i></div>
+      <div>
+        <div class="safety-title">Ból to nie zmęczenie — rozróżniaj je</div>
+        <div class="safety-desc">Zakwasy i ogólne zmęczenie są normalne. Ostry ból w stawie (kolano, kostka, biodro), ból jednostronny lub narastający to sygnał do zatrzymania. Ból, który nie przechodzi po 48 h odpoczynku — konsultacja z lekarzem sportowym.</div>
+      </div>
+    </div>
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-backpack" aria-hidden="true" style="color:var(--c-phase3)"></i></div>
+      <div>
+        <div class="safety-title">Obciążenia zewnętrzne — dopiero po 16–17 roku życia</div>
+        <div class="safety-desc">Biegi z ciężkim plecakiem wprowadzasz dopiero w Etapie II (mies. 4–6), i to ze stopniowaniem: zaczynasz od 3–5 kg na krótkim dystansie. Kręgosłup w wieku 15 lat wciąż się formuje — duże obciążenia aksjalne są ryzykowne.</div>
+      </div>
+    </div>
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-moon" aria-hidden="true" style="color:var(--c-phase1)"></i></div>
+      <div>
+        <div class="safety-title">Sen — 8–9 godzin bez negocjacji</div>
+        <div class="safety-desc">Hormon wzrostu wydziela się głównie w głębokich fazach snu nocnego. To czas, kiedy mięśnie, kości i ścięgna się regenerują. Brak snu zeruje adaptację po treningu skuteczniej niż cokolwiek innego.</div>
+      </div>
+    </div>
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-salad" aria-hidden="true" style="color:var(--c-phase1)"></i></div>
+      <div>
+        <div class="safety-title">Odżywianie — paliwo dla rosnącego ciała</div>
+        <div class="safety-desc">Nie licz kalorii obsesyjnie, ale jedz wystarczająco. 1,5–2 g białka na kg masy ciała dziennie (mięso, jaja, ryby, nabiał). Węglowodany złożone przed treningiem (owsianka, ryż, makaron). Nawodnienie: min. 2–2,5 l wody dziennie.</div>
+      </div>
+    </div>
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-alert-triangle" aria-hidden="true" style="color:var(--c-phase3)"></i></div>
+      <div>
+        <div class="safety-title">Nie nadrabiaj opuszczonych treningów</div>
+        <div class="safety-desc">Jeśli tydzień wypadnie przez chorobę lub szkołę — wróć do poprzedniego poziomu obciążenia, nie do tego, który pominąłeś. Próba "odrobienia" pominiętego tygodnia w jeden weekend to prosta droga do kontuzji.</div>
+      </div>
+    </div>
+
+    <div class="safety-item">
+      <div class="safety-icon"><i class="ti ti-shoe" aria-hidden="true" style="color:var(--c-phase2)"></i></div>
+      <div>
+        <div class="safety-title">Obuwie biegowe — nie oszczędzaj na nim</div>
+        <div class="safety-desc">Buty biegowe wymieniaj co 500–700 km. Bieganie w zużytym lub złym obuwiu to jeden z głównych powodów kontuzji u młodych biegaczy. Jeśli możesz, wizyta w specjalistycznym sklepie z analizą chodu (bezpłatna w większości sklepów).</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function togglePhase(header) {
+    const body = header.nextElementSibling;
+    const chevron = header.querySelector('.phase-chevron');
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.phase-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.phase-chevron').forEach(c => c.classList.remove('open'));
+    if (!isOpen) {
+      body.classList.add('open');
+      chevron.classList.add('open');
+    }
+  }
+</script>
