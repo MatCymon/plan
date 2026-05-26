@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan GROM — wersja poprawiona</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a18; }
+  .app { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+  .hero { padding: 1.5rem 1.75rem 1.1rem; border-bottom: 1px solid #e8e6df; }
+  .hero-title { font-size: 20px; font-weight: 600; }
+  .hero-sub { font-size: 13px; color: #6b6b68; margin-top: 5px; }
+  .hero-ver { display: inline-block; font-size: 11px; font-weight: 600; background: #1D9E75; color: #fff; padding: 2px 8px; border-radius: 6px; margin-top: 8px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 8px; font-weight: 500; }
+  .b-g { background: #E1F5EE; color: #085041; }
+  .b-b { background: #E6F1FB; color: #042C53; }
+  .b-a { background: #FAEEDA; color: #412402; }
+  .b-p { background: #FBEAF0; color: #4B1528; }
+
+  .tabs { display: flex; border-bottom: 1px solid #e8e6df; padding: 0 1.75rem; overflow-x: auto; }
+  .tab-btn { font-size: 13px; font-weight: 500; padding: 10px 14px; border: none; background: none; cursor: pointer; color: #6b6b68; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .tab-btn.active { color: #1a1a18; border-bottom-color: #1a1a18; }
+  .tab-panel { display: none; padding: 1.25rem 1.75rem 1.75rem; }
+  .tab-panel.active { display: block; }
+  .note { font-size: 12px; color: #9b9a97; margin-bottom: 14px; }
+
+  .phases { display: flex; flex-direction: column; gap: 10px; }
+  .phase-card { border-radius: 12px; border: 1px solid #e8e6df; overflow: hidden; }
+  .phase-header { display: flex; align-items: center; gap: 12px; padding: 13px 16px; cursor: pointer; transition: background .12s; }
+  .phase-header:hover { background: #f8f7f4; }
+  .phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .phase-title-col { flex: 1; }
+  .phase-title { font-size: 14px; font-weight: 600; }
+  .phase-months { font-size: 12px; color: #9b9a97; margin-top: 1px; }
+  .phase-chevron { font-size: 13px; color: #9b9a97; transition: transform .2s; }
+  .phase-chevron.open { transform: rotate(180deg); }
+  .phase-body { display: none; padding: 0 16px 16px; border-top: 1px solid #e8e6df; }
+  .phase-body.open { display: block; }
+  .phase-goal { font-size: 13px; color: #4a4a48; margin: 12px 0 14px; line-height: 1.65; }
+
+  .freq-title { font-size: 11px; font-weight: 600; color: #9b9a97; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+  .freq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .freq-card { background: #f8f7f4; border-radius: 8px; padding: 9px 11px; }
+  .freq-type { font-size: 11px; font-weight: 500; color: #6b6b68; margin-bottom: 2px; }
+  .freq-val { font-size: 17px; font-weight: 600; color: #1a1a18; }
+  .freq-sub { font-size: 11px; color: #9b9a97; margin-top: 2px; line-height: 1.4; }
+
+  .phase-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .phase-col-title { font-size: 11px; font-weight: 600; color: #9b9a97; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px; }
+  .phase-item { font-size: 12px; color: #4a4a48; margin-bottom: 5px; line-height: 1.5; padding-left: 12px; position: relative; }
+  .phase-item::before { content: "–"; position: absolute; left: 0; color: #9b9a97; }
+
+  .week-grid { display: flex; flex-direction: column; gap: 8px; }
+  .day-card { border-radius: 12px; border: 1px solid #e8e6df; overflow: hidden; }
+  .day-card.rest { opacity: .65; }
+  .day-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8f7f4; }
+  .day-name { font-size: 13px; font-weight: 600; width: 92px; flex-shrink: 0; }
+  .day-type { font-size: 12px; padding: 3px 9px; border-radius: 8px; font-weight: 500; white-space: nowrap; }
+  .type-cali { background: #FAEEDA; color: #412402; }
+  .type-run  { background: #E6F1FB; color: #042C53; }
+  .type-swim { background: #E1F5EE; color: #085041; }
+  .type-regen { background: #F1EFE8; color: #2C2C2A; }
+  .type-rest { background: #f0ede8; color: #9b9a97; }
+  .day-tag { font-size: 11px; color: #9b9a97; margin-left: auto; }
+  .day-body { padding: 10px 14px; }
+  .day-desc { font-size: 13px; color: #4a4a48; line-height: 1.6; margin-bottom: 7px; }
+  .ex-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .ex-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 1px solid #e8e6df; color: #6b6b68; background: #f8f7f4; }
+  .day-note { font-size: 11px; color: #9b9a97; margin-top: 7px; font-style: italic; }
+
+  .prog-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .prog-tab { font-size: 12px; padding: 5px 13px; border-radius: 20px; border: 1px solid #e8e6df; cursor: pointer; font-weight: 500; color: #6b6b68; background: #f8f7f4; transition: all .15s; }
+  .prog-panel { display: none; }
+  .prog-panel.active { display: block; }
+
+  .prog-table-wrap { overflow-x: auto; border: 1px solid #e8e6df; border-radius: 10px; }
+  .prog-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .prog-table th { text-align: left; font-weight: 600; font-size: 11px; color: #9b9a97; padding: 8px 11px; border-bottom: 1px solid #e8e6df; white-space: nowrap; background: #f8f7f4; }
+  .prog-table td { padding: 8px 11px; border-bottom: 1px solid #e8e6df; color: #4a4a48; line-height: 1.45; vertical-align: top; }
+  .prog-table tr:last-child td { border-bottom: none; }
+  .prog-table tr:hover td { background: #fafaf8; }
+  .week-label { font-weight: 600; color: #1a1a18; white-space: nowrap; }
+  .deload-row td { color: #9b9a97; font-style: italic; }
+  .deload-badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 20px; margin-left: 4px; font-weight: 600; }
+
+  .bench-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .bench-card { background: #f8f7f4; border-radius: 8px; padding: .9rem 1rem; }
+  .bench-label { font-size: 11px; color: #9b9a97; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .bench-now { font-size: 17px; font-weight: 600; color: #1a1a18; }
+  .bench-target { font-size: 11px; color: #9b9a97; margin-top: 2px; }
+  .bench-bar-bg { height: 4px; background: #e8e6df; border-radius: 4px; margin-top: 10px; }
+  .bench-bar { height: 4px; border-radius: 4px; }
+
+  .safety-list { display: flex; flex-direction: column; gap: 8px; }
+  .safety-item { display: flex; gap: 12px; align-items: flex-start; padding: 11px 13px; border-radius: 10px; background: #f8f7f4; }
+  .s-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .s-title { font-size: 13px; font-weight: 600; color: #1a1a18; margin-bottom: 3px; }
+  .s-desc { font-size: 12px; color: #4a4a48; line-height: 1.55; }
+
+  @media (max-width: 540px) {
+    .phase-cols { grid-template-columns: 1fr; }
+    .hero { padding: 1.1rem 1.1rem .9rem; }
+    .tab-panel { padding: 1rem 1.1rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">Plan przygotowania do selekcji JW GROM</div>
+  <div class="hero-sub">Profil: 15 lat · kalistenika 2×/tydz · bieg 7+ km · 3 km w 13–14 min · pływanie 200 m</div>
+  <div class="hero-ver">✓ Wersja zweryfikowana — 13 korekt</div>
+  <div class="badges">
+    <span class="badge b-g">Etap I — Baza tlenowa</span>
+    <span class="badge b-b">Etap II — Wytrzymałość</span>
+    <span class="badge b-a">Etap III — Intensywność</span>
+    <span class="badge b-p">Etap IV — Integracja</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('plan',this)">Roczny plan</button>
+  <button class="tab-btn" onclick="showTab('week',this)">Tydzień</button>
+  <button class="tab-btn" onclick="showTab('prog',this)">Progresja</button>
+  <button class="tab-btn" onclick="showTab('bench',this)">Benchmarki GROM</button>
+  <button class="tab-btn" onclick="showTab('safety',this)">Bezpieczeństwo</button>
+</div>
+
+<!-- ══ PLAN ══ -->
+<div class="tab-panel active" id="tab-plan">
+  <p class="note">Kliknij fazę, żeby rozwinąć szczegóły i częstotliwość treningów.</p>
+  <div class="phases">
+
+    <!-- ETAP I -->
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:#1D9E75"></div>
+        <div class="phase-title-col">
+          <div class="phase-title">Etap I — Budowanie bazy tlenowej</div>
+          <div class="phase-months">Miesiące 1–3 · tygodnie 1–12</div>
+        </div>
+        <div class="phase-chevron open">▾</div>
+      </div>
+      <div class="phase-body open">
+        <div class="phase-goal">Cel: zbudowanie silnego fundamentu aerobowego i poprawa techniki pływania. Bieg startuje od 7 km (Twój aktualny poziom), kończy na ~11 km. Bieg 3 km: zejść poniżej 12:45 min. Pływanie: ciągłe 400 m kraulem bez stopu.</div>
+        <div class="freq-title">Częstotliwość treningów</div>
+        <div class="freq-grid">
+          <div class="freq-card"><div class="freq-type">Kalistenika</div><div class="freq-val">2×</div><div class="freq-sub">pon + śr (Twoje sesje)</div></div>
+          <div class="freq-card"><div class="freq-type">Bieg</div><div class="freq-val">1×</div><div class="freq-sub">wt · 50–60 min · strefa 2</div></div>
+          <div class="freq-card"><div class="freq-type">Pływanie</div><div class="freq-val">1×</div><div class="freq-sub">czw · 50 min · technika</div></div>
+          <div class="freq-card"><div class="freq-type">Regeneracja</div><div class="freq-val">1×</div><div class="freq-sub">pt · stretching 20–30 min</div></div>
+          <div class="freq-card"><div class="freq-type">Łącznie sesji</div><div class="freq-val">4–5</div><div class="freq-sub">2 dni pełnego odpoczynku</div></div>
+        </div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wtorek)</div>
+            <div class="phase-item">Strefa 2 — tempo, w którym możesz mówić zdaniami (5:45–5:55 min/km)</div>
+            <div class="phase-item">Dystans: 7–11 km w ciągu etapu</div>
+            <div class="phase-item">Reguła 10%: wzrost dystansu max. 10% tygodniowo</div>
+            <div class="phase-item">Co 4. tydzień — deload (–30% dystansu)</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czwartek)</div>
+            <div class="phase-item">Skupienie na technice kraula — pozycja, oddech, pociągnięcie</div>
+            <div class="phase-item">Interwały: 4→8 × 50 m z przerwą 30 s</div>
+            <div class="phase-item">Cel końca etapu: ciągły 400 m kraulem</div>
+            <div class="phase-item">Brak presji czasowej — priorytet technika</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETAP II -->
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:#185FA5"></div>
+        <div class="phase-title-col">
+          <div class="phase-title">Etap II — Wytrzymałość specjalna</div>
+          <div class="phase-months">Miesiące 4–6 · tygodnie 13–24</div>
+        </div>
+        <div class="phase-chevron">▾</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-goal">Cel: drugi bieg tygodniowy, pierwsze interwały i biegi tempowe. Marszobiegi z plecakiem 5 kg. Bieg 5 km: zejść poniżej 23:00 min. Pływanie 200 m: zejść poniżej 4:20 min. Nauka grzbietu i żabki.</div>
+        <div class="freq-title">Częstotliwość treningów</div>
+        <div class="freq-grid">
+          <div class="freq-card"><div class="freq-type">Kalistenika</div><div class="freq-val">2×</div><div class="freq-sub">pon + śr (bez zmian)</div></div>
+          <div class="freq-card"><div class="freq-type">Bieg</div><div class="freq-val">2×</div><div class="freq-sub">wt (tempo/interwały) + sob (długi)</div></div>
+          <div class="freq-card"><div class="freq-type">Pływanie</div><div class="freq-val">1–2×</div><div class="freq-sub">czw (główna) + opcja</div></div>
+          <div class="freq-card"><div class="freq-type">Marszobieg</div><div class="freq-val">1×/mies.</div><div class="freq-sub">8–12 km · plecak 5 kg</div></div>
+          <div class="freq-card"><div class="freq-type">Regeneracja</div><div class="freq-val">1×</div><div class="freq-sub">pt · stretching + mobilność</div></div>
+          <div class="freq-card"><div class="freq-type">Łącznie sesji</div><div class="freq-val">5–6</div><div class="freq-sub">nd — pełny odpoczynek</div></div>
+        </div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wt + sob)</div>
+            <div class="phase-item">Wtorek: 70% strefa 2, 30% interwały lub tempo (wysiłkiem 8/10)</div>
+            <div class="phase-item">Sobota: długi bieg 10–15 km w strefie 2 (6:00–6:15 min/km)</div>
+            <div class="phase-item">Interwały: 6×400 m, 4×800 m lub 3×1 km — wysiłkiem, nie tempem</div>
+            <div class="phase-item">Test 5 km na czas co 4 tygodnie</div>
+            <div class="phase-item">1× w miesiącu marszoobieg z plecakiem 5 kg (zastępuje sob. bieg)</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czwartek)</div>
+            <div class="phase-item">800 m mieszane — kraul + grzbiet</div>
+            <div class="phase-item">Elementy pływania pod wodą — dynamika, oddechy</div>
+            <div class="phase-item">Trening czasowy 200 m — cel poniżej 4:20</div>
+            <div class="phase-item">Nauka żabki jako trzeciego stylu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETAP III -->
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:#BA7517"></div>
+        <div class="phase-title-col">
+          <div class="phase-title">Etap III — Siła wytrzymałościowa</div>
+          <div class="phase-months">Miesiące 7–9 · tygodnie 25–36</div>
+        </div>
+        <div class="phase-chevron">▾</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-goal">Cel: treningi progowe, biegi terenowe, wzrost intensywności. Bieg 5 km: zejść poniżej 22:30 min. Bieg 3 km: zejść poniżej 12:30 min. Pływanie 200 m: zejść poniżej 4:10 min. Marszobiegi z plecakiem 8 kg.</div>
+        <div class="freq-title">Częstotliwość treningów</div>
+        <div class="freq-grid">
+          <div class="freq-card"><div class="freq-type">Kalistenika</div><div class="freq-val">2×</div><div class="freq-sub">pon + śr (bez zmian)</div></div>
+          <div class="freq-card"><div class="freq-type">Bieg</div><div class="freq-val">2×</div><div class="freq-sub">wt (intensywny) + sob (długi)</div></div>
+          <div class="freq-card"><div class="freq-type">Pływanie</div><div class="freq-val">2×</div><div class="freq-sub">czw (główna) + druga sesja</div></div>
+          <div class="freq-card"><div class="freq-type">Marszobieg</div><div class="freq-val">1×/mies.</div><div class="freq-sub">15 km · plecak 8 kg (zastępuje sob.)</div></div>
+          <div class="freq-card"><div class="freq-type">Regeneracja</div><div class="freq-val">1×</div><div class="freq-sub">pt · stretching + rolowanie</div></div>
+          <div class="freq-card"><div class="freq-type">Łącznie sesji</div><div class="freq-val">6–7</div><div class="freq-sub">nd — pełny odpoczynek</div></div>
+        </div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wt + sob)</div>
+            <div class="phase-item">Wtorek: treningi progowe 20–25 min strefa 4 lub 8–10×400 m wysiłkiem 9/10</div>
+            <div class="phase-item">Sobota: długi bieg 15–19 km w strefie 2 (6:00–6:10 min/km)</div>
+            <div class="phase-item">Fartlek 30–40 min — spontaniczne zmiany tempa</div>
+            <div class="phase-item">Bieg terenowy — wzgórza, las — wzmocnienie stabilizacji</div>
+            <div class="phase-item">Nauka biegu wahadłowego 10×10 m (test GROM)</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czw + druga)</div>
+            <div class="phase-item">400 m kraulem — mierzony</div>
+            <div class="phase-item">Trening stylów: grzbiet + żabka w jednej sesji</div>
+            <div class="phase-item">Test 200 m — cel: poniżej 4:10</div>
+            <div class="phase-item">Pływanie pod wodą ciągiem 15–20 m</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETAP IV -->
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-dot" style="background:#993556"></div>
+        <div class="phase-title-col">
+          <div class="phase-title">Etap IV — Integracja i testy kontrolne</div>
+          <div class="phase-months">Miesiące 10–12 · tygodnie 37–48</div>
+        </div>
+        <div class="phase-chevron">▾</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-goal">Cel: pełna integracja elementów, stopniowana symulacja selekcji (najpierw 2, potem 3, w T47 pełna 4-elementowa). Bieg 5 km: poniżej 22:00 min. Bieg 3 km: poniżej 12:30 min. Pływanie 200 m: poniżej 4:10–4:15 min. Marszobieg 20 km z plecakiem 10 kg.</div>
+        <div class="freq-title">Częstotliwość treningów</div>
+        <div class="freq-grid">
+          <div class="freq-card"><div class="freq-type">Kalistenika</div><div class="freq-val">2×</div><div class="freq-sub">pon + śr (bez zmian)</div></div>
+          <div class="freq-card"><div class="freq-type">Bieg</div><div class="freq-val">2×</div><div class="freq-sub">wt (interwały/test) + sob (długi)</div></div>
+          <div class="freq-card"><div class="freq-type">Pływanie</div><div class="freq-val">2×</div><div class="freq-sub">czw (główna) + pt (dodatkowa)</div></div>
+          <div class="freq-card"><div class="freq-type">Marszobieg</div><div class="freq-val">1×/mies.</div><div class="freq-sub">20 km · plecak 10 kg (zastępuje sob.)</div></div>
+          <div class="freq-card"><div class="freq-type">Symulacja selekcji</div><div class="freq-val">T47</div><div class="freq-sub">pełna — po stopniowym wdrożeniu</div></div>
+          <div class="freq-card"><div class="freq-type">Łącznie sesji</div><div class="freq-val">7–8</div><div class="freq-sub">nd — pełny odpoczynek</div></div>
+        </div>
+        <div class="phase-cols">
+          <div>
+            <div class="phase-col-title">Bieg (wt + sob)</div>
+            <div class="phase-item">Wtorek: 5 km na czas lub 8–10×400 m wysiłkiem 9/10</div>
+            <div class="phase-item">Sobota: 20–23 km w strefie 2 (6:00–6:15 min/km)</div>
+            <div class="phase-item">Bieg wahadłowy 10×10 m — ćwiczenie techniki i szybkości</div>
+            <div class="phase-item">W tygodniach z marszobiegiem: marszobieg zastępuje długi bieg sob.</div>
+          </div>
+          <div>
+            <div class="phase-col-title">Pływanie (czw + pt)</div>
+            <div class="phase-item">Test 200 m — cel: poniżej 4:10–4:15</div>
+            <div class="phase-item">400 m mixem stylów bez stopu</div>
+            <div class="phase-item">Skok z wieży + 50 m kraulem — symulacja GROM</div>
+            <div class="phase-item">Pływanie pod wodą 20 m ciągiem</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ TYDZIEŃ ══ -->
+<div class="tab-panel" id="tab-week">
+  <p class="note">Przykładowy tydzień Etapu I. Kalistenika 2× jest już Twoja — dochodzą 2 nowe sesje.</p>
+  <div class="week-grid">
+    <div class="day-card">
+      <div class="day-header"><div class="day-name">Poniedziałek</div><div class="day-type type-cali">Kalistenika</div><div class="day-tag">Twoja sesja</div></div>
+      <div class="day-body">
+        <div class="day-desc">Twój własny trening kalisteniczny — kontynuuj jak dotychczas.</div>
+        <div class="ex-list"><span class="ex-pill">Podciągnięcia</span><span class="ex-pill">Pompki</span><span class="ex-pill">Dipy</span><span class="ex-pill">Wejścia na linę</span></div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-header"><div class="day-name">Wtorek</div><div class="day-type type-run">Bieg tlenowy</div><div class="day-tag">Nowa sesja · 55–65 min</div></div>
+      <div class="day-body">
+        <div class="day-desc">5 min marszu jako rozgrzewka. Bieg ciągły 7 km w strefie 2 — tempo ~5:50 min/km, możesz spokojnie mówić zdaniami. 5 min marszu na schłodzenie + stretching dynamiczny.</div>
+        <div class="ex-list"><span class="ex-pill">Rozgrzewka 5 min marsz</span><span class="ex-pill">Bieg 7 km · ~5:50 min/km</span><span class="ex-pill">Strefa 2</span><span class="ex-pill">Schłodzenie + stretching</span></div>
+        <div class="day-note">T1: 7 km → T11: 11 km. Co 4. tydzień deload (–30%). Reguła 10% — nie przeskakuj.</div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-header"><div class="day-name">Środa</div><div class="day-type type-cali">Kalistenika</div><div class="day-tag">Twoja sesja</div></div>
+      <div class="day-body">
+        <div class="day-desc">Twój własny trening kalisteniczny. Jeśli nogi bolą po wtorku — zmniejsz intensywność, ale nie odpuszczaj.</div>
+        <div class="ex-list"><span class="ex-pill">Podciągnięcia</span><span class="ex-pill">Pompki</span><span class="ex-pill">Dipy</span><span class="ex-pill">Core</span></div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-header"><div class="day-name">Czwartek</div><div class="day-type type-swim">Pływanie</div><div class="day-tag">Nowa sesja · 50 min</div></div>
+      <div class="day-body">
+        <div class="day-desc">Skupienie na technice kraula. Ekonomia ruchu > prędkość. Rozgrzewka 100 m spokojnym stylem. GROM wymaga 200 m w 4:30 — zanim zaczniesz bić rekordy, naucz się pływać bez marnowania energii.</div>
+        <div class="ex-list"><span class="ex-pill">Rozgrzewka 100 m</span><span class="ex-pill">Dryle techniczne 6×25 m</span><span class="ex-pill">Interwały 4×50 m · prz. 30 s</span><span class="ex-pill">Kraul ciągły 200 m</span><span class="ex-pill">Schłodzenie 50 m grzbiet</span></div>
+        <div class="day-note">T1: 4×50 m → T12: 8×50 m lub 4×100 m. Priorytet — technika, nie czas.</div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-header"><div class="day-name">Piątek</div><div class="day-type type-regen">Regeneracja</div><div class="day-tag">Obowiązkowe · 20–30 min</div></div>
+      <div class="day-body">
+        <div class="day-desc">W wieku 15 lat płytki wzrostowe i ścięgna są wrażliwsze niż mięśnie. Regeneracja jest inwestycją w to, żebyś za 5 lat miał sprawne kolana i kostki.</div>
+        <div class="ex-list"><span class="ex-pill">Stretching statyczny 15 min</span><span class="ex-pill">Pośladki · udo · łydki</span><span class="ex-pill">Mobilność bioder</span><span class="ex-pill">Mobilność barków</span></div>
+      </div>
+    </div>
+    <div class="day-card rest">
+      <div class="day-header"><div class="day-name">Sobota</div><div class="day-type type-rest">Odpoczynek</div><div class="day-tag">Spacer maks. 5 km</div></div>
+      <div class="day-body"><div class="day-desc">Aktywny wypoczynek — spacer, rower rekreacyjny. Żadnych intensywnych wysiłków. Od Etapu II sobota staje się dniem długiego biegu lub marszobiegu.</div></div>
+    </div>
+    <div class="day-card rest">
+      <div class="day-header"><div class="day-name">Niedziela</div><div class="day-type type-rest">Pełny odpoczynek</div><div class="day-tag">Sen · jedzenie · relaks</div></div>
+      <div class="day-body"><div class="day-desc">8–9 godzin snu. To kiedy ciało naprawdę rośnie i adaptuje się. Odpoczynek jest częścią planu — nie ma w tym nic do dyskusji.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROGRESJA ══ -->
+<div class="tab-panel" id="tab-prog">
+  <div class="prog-tabs">
+    <button class="prog-tab active" style="background:#1D9E75;color:#fff;border-color:transparent" onclick="showProg('p1',this,'#1D9E75')">Etap I · T1–12</button>
+    <button class="prog-tab" onclick="showProg('p2',this,'#185FA5')">Etap II · T13–24</button>
+    <button class="prog-tab" onclick="showProg('p3',this,'#BA7517')">Etap III · T25–36</button>
+    <button class="prog-tab" onclick="showProg('p4',this,'#993556')">Etap IV · T37–48</button>
+  </div>
+
+  <!-- ETAP I -->
+  <div class="prog-panel active" id="prog-p1">
+    <div class="prog-table-wrap"><table class="prog-table">
+      <thead><tr><th>Tydzień</th><th>Bieg (wtorek)</th><th>Pływanie (czwartek)</th><th>Uwaga</th></tr></thead>
+      <tbody>
+        <tr><td class="week-label">T1</td><td>7 km · 5:50 min/km</td><td>4×50 m + 200 m ciągły kraulem</td><td>Kalibracja tempa strefy 2, nauka oddechu</td></tr>
+        <tr><td class="week-label">T2</td><td>7,5 km · 5:50 min/km</td><td>5×50 m + 200 m ciągły</td><td>+10% dystansu biegu</td></tr>
+        <tr><td class="week-label">T3</td><td>8 km · 5:45 min/km</td><td>6×50 m lub 3×100 m</td><td>Zmiana formatu interwałów pływania</td></tr>
+        <tr class="deload-row"><td class="week-label">T4 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5,5 km · spokojnie</td><td>3×50 m + 100 m ciągły</td><td>Tydzień regeneracji — bez przyspieszania</td></tr>
+        <tr><td class="week-label">T5</td><td>8,5 km · 5:45 min/km</td><td>6×50 m + 300 m ciągły</td><td>Test techniki kraula — nagranie telefonem?</td></tr>
+        <tr><td class="week-label">T6</td><td>9 km · 5:45 min/km</td><td>4×100 m · przerwa 45 s</td><td>Wydłużenie odcinków pływania</td></tr>
+        <tr><td class="week-label">T7</td><td>9,5 km · 5:40 min/km</td><td>5×100 m + 200 m na czas (pomiar bazowy)</td><td>Pierwszy pomiar 200 m — cel: zapis czasu wyjściowego</td></tr>
+        <tr class="deload-row"><td class="week-label">T8 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>6,5 km · spokojnie</td><td>4×50 m + grzbiet 100 m</td><td>Regeneracja + nauka techniki grzbietu</td></tr>
+        <tr><td class="week-label">T9</td><td>10 km · 5:40 min/km</td><td>6×100 m · przerwa 40 s</td><td>Wzrost objętości obu sesji</td></tr>
+        <tr><td class="week-label">T10</td><td>10 km + 6×200 m wysiłkiem 8/10</td><td>400 m ciągły kraulem</td><td>Pierwszy dystans 400 m bez stopu — kamień milowy</td></tr>
+        <tr><td class="week-label">T11</td><td>11 km · 5:35 min/km</td><td>6×100 m + pływanie pod wodą 2×10 m</td><td>Pierwsze ćwiczenia podwodne</td></tr>
+        <tr class="deload-row"><td class="week-label">T12 <span class="deload-badge" style="background:#E6F1FB;color:#042C53">test</span></td><td>5 km na czas (cel: poniżej 22:30)</td><td>200 m kraulem na czas</td><td>Test kontrolny — koniec Etapu I</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- ETAP II -->
+  <div class="prog-panel" id="prog-p2">
+    <div class="prog-table-wrap"><table class="prog-table">
+      <thead><tr><th>Tydzień</th><th>Bieg wt (intensywny)</th><th>Bieg sob (długi)</th><th>Pływanie czw</th><th>Uwaga</th></tr></thead>
+      <tbody>
+        <tr><td class="week-label">T13</td><td>6×400 m wysiłkiem 8/10 + 2 km rozgrzewka</td><td>10 km · 6:10 min/km</td><td>500 m kraul + 4×50 m sprint</td><td>Start 2. biegu tygodniowo — nowa stymulacja</td></tr>
+        <tr><td class="week-label">T14</td><td>3×1 km wysiłkiem 8/10 (nie tempem)</td><td>11 km · 6:05 min/km</td><td>6×100 m + grzbiet 200 m</td><td>Interwały kilometrowe — intensywność ważniejsza niż pace</td></tr>
+        <tr><td class="week-label">T15</td><td>4×800 m wysiłkiem 8/10</td><td>12 km · 6:00 min/km</td><td>600 m ciągły kraul + żabka 100 m</td><td>Nauka żabki jako trzeciego stylu</td></tr>
+        <tr class="deload-row"><td class="week-label">T16 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5 km · spokojnie</td><td>7 km · bardzo spokojnie</td><td>4×50 m + 200 m ciągły</td><td>Regeneracja po wzroście objętości</td></tr>
+        <tr><td class="week-label">T17</td><td>6×400 m wysiłkiem 8/10 + 2 km progowo</td><td>12 km · 6:00 min/km</td><td>800 m mix kraul + grzbiet</td><td>Marszobieg 8 km / plecak 5 kg (zastępuje bieg sob.)</td></tr>
+        <tr><td class="week-label">T18</td><td>20 min bieg progowy strefa 4</td><td>13 km · 5:55 min/km</td><td>5×100 m + 200 m na czas</td><td>Test 200 m — cel: poniżej 4:30</td></tr>
+        <tr><td class="week-label">T19</td><td>5 km na czas (test)</td><td>13 km · 5:55 min/km</td><td>8×100 m · przerwa 35 s</td><td>Test 5 km — cel: poniżej 23:30</td></tr>
+        <tr class="deload-row"><td class="week-label">T20 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5 km · spokojnie</td><td>8 km · 6:20 min/km</td><td>400 m ciągły + dryle techniczne</td><td>Regeneracja</td></tr>
+        <tr><td class="week-label">T21</td><td>5×1 km wysiłkiem 8/10</td><td>14 km · 5:50 min/km</td><td>1000 m mix + pływanie pod wodą 3×10 m</td><td>Wzrost objętości długiego biegu</td></tr>
+        <tr><td class="week-label">T22</td><td>25 min progowy + fartlek 10 min</td><td>14 km · 5:50 min/km</td><td>4×200 m · przerwa 45 s</td><td>Marszobieg 10 km / plecak 5 kg (zastępuje bieg sob.)</td></tr>
+        <tr><td class="week-label">T23</td><td>6×600 m wysiłkiem 8,5/10</td><td>15 km · 5:45 min/km</td><td>800 m ciągły + 200 m na czas</td><td>Test 200 m — cel: poniżej 4:20</td></tr>
+        <tr class="deload-row"><td class="week-label">T24 <span class="deload-badge" style="background:#E6F1FB;color:#042C53">test</span></td><td>5 km na czas (cel: poniżej 23:00)</td><td>10 km · spokojnie</td><td>200 m na czas (cel: poniżej 4:20)</td><td>Test kontrolny — koniec Etapu II</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- ETAP III -->
+  <div class="prog-panel" id="prog-p3">
+    <div class="prog-table-wrap"><table class="prog-table">
+      <thead><tr><th>Tydzień</th><th>Bieg wt (intensywny)</th><th>Bieg sob (długi)</th><th>Pływanie czw</th><th>Uwaga</th></tr></thead>
+      <tbody>
+        <tr><td class="week-label">T25</td><td>Fartlek 35 min + dryle biegowe</td><td>15 km · 6:10 min/km</td><td>6×200 m · przerwa 40 s</td><td>Start Etapu III — wzrost intensywności</td></tr>
+        <tr><td class="week-label">T26</td><td>Bieg progowy 25 min strefa 4</td><td>16 km · 6:05 min/km</td><td>400 m kraul mierzony + 400 m mix</td><td>Pierwszy mierzony 400 m kraul</td></tr>
+        <tr><td class="week-label">T27</td><td>8×400 m wysiłkiem 9/10</td><td>16 km · 6:05 min/km</td><td>4×200 m + pływanie pod wodą 3×15 m</td><td>Wzrost intensywności pływania podwodnego</td></tr>
+        <tr class="deload-row"><td class="week-label">T28 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5 km · spokojnie</td><td>10 km · 6:20 min/km</td><td>500 m spokojny mix stylów</td><td>Regeneracja</td></tr>
+        <tr><td class="week-label">T29</td><td>5 km na czas (test)</td><td>17 km · 6:00 min/km</td><td>8×100 m · przerwa 30 s + grzbiet 300 m</td><td>Test 5 km — cel: poniżej 22:30</td></tr>
+        <tr><td class="week-label">T30</td><td>Bieg terenowy 10 km wzgórza</td><td>Marszobieg 15 km / plecak 8 kg</td><td>400 m kraul + 200 m na czas</td><td>Marszobieg zastępuje długi bieg w sob.</td></tr>
+        <tr><td class="week-label">T31</td><td>3×2 km progowo strefa 4</td><td>18 km · 6:00 min/km</td><td>600 m mix + żabka 200 m + 200 m na czas</td><td>Test 200 m — cel: poniżej 4:10</td></tr>
+        <tr class="deload-row"><td class="week-label">T32 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5 km · spokojnie</td><td>11 km · 6:15 min/km</td><td>400 m ciągły + dryle techniczne</td><td>Regeneracja</td></tr>
+        <tr><td class="week-label">T33</td><td>Fartlek 40 min · agresywne zmiany</td><td>18 km · 6:00 min/km</td><td>4×200 m · przerwa 35 s + pływanie pod wodą 4×15 m</td><td>Wzrost objętości obu sesji</td></tr>
+        <tr><td class="week-label">T34</td><td>10×400 m wysiłkiem 9/10</td><td>Marszobieg 15 km / plecak 8 kg</td><td>800 m mix bez stopu</td><td>Marszobieg zastępuje długi bieg sob.</td></tr>
+        <tr><td class="week-label">T35</td><td>Bieg wahadłowy 10×10 m + 3 km progowo</td><td>19 km · 5:55 min/km</td><td>400 m mix mierzony + 200 m na czas</td><td>Nauka i trening biegu wahadłowego z normy GROM</td></tr>
+        <tr class="deload-row"><td class="week-label">T36 <span class="deload-badge" style="background:#E6F1FB;color:#042C53">test</span></td><td>5 km na czas (cel: poniżej 22:30)</td><td>12 km · spokojnie</td><td>200 m na czas (cel: poniżej 4:10)</td><td>Test kontrolny — koniec Etapu III</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- ETAP IV -->
+  <div class="prog-panel" id="prog-p4">
+    <div class="prog-table-wrap"><table class="prog-table">
+      <thead><tr><th>Tydzień</th><th>Bieg wt</th><th>Bieg sob (długi)</th><th>Pływanie czw</th><th>Uwaga</th></tr></thead>
+      <tbody>
+        <tr><td class="week-label">T37</td><td>5 km na czas + dryle biegowe</td><td>20 km · 6:10 min/km</td><td>6×200 m + skok z wieży 2×</td><td>Start Etapu IV — test od razu</td></tr>
+        <tr><td class="week-label">T38</td><td>8×400 m wysiłkiem 9/10 + bieg wahadłowy 10×10 m</td><td>20 km · 6:05 min/km</td><td>400 m mix + pływanie pod wodą 3×20 m</td><td>Wzrost dystansu pływania podwodnego</td></tr>
+        <tr><td class="week-label">T39</td><td>Bieg progowy 30 min + fartlek 15 min</td><td>21 km · 6:05 min/km</td><td>5×200 m · przerwa 30 s + 200 m na czas</td><td>Test 200 m — cel: poniżej 4:10</td></tr>
+        <tr class="deload-row"><td class="week-label">T40 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5 km · spokojnie</td><td>12 km · 6:15 min/km</td><td>400 m spokojny mix</td><td>Regeneracja</td></tr>
+        <tr><td class="week-label">T41</td><td>Symulacja częściowa: podciągnięcia + bieg 3 km na czas</td><td>21 km · 6:00 min/km</td><td>200 m na czas + skok z wieży</td><td>Etap 1 symulacji — 2 elementy sekwencyjnie</td></tr>
+        <tr><td class="week-label">T42</td><td>10×400 m wysiłkiem 9/10</td><td>Marszobieg 20 km / plecak 10 kg</td><td>800 m mix + pływanie pod wodą 4×20 m</td><td>Marszobieg zastępuje długi bieg sob.</td></tr>
+        <tr><td class="week-label">T43</td><td>5 km na czas (test)</td><td>22 km · 6:00 min/km</td><td>400 m kraul mierzony + grzbiet 300 m</td><td>Test 5 km — cel: poniżej 22:00</td></tr>
+        <tr class="deload-row"><td class="week-label">T44 <span class="deload-badge" style="background:#FAEEDA;color:#412402">deload</span></td><td>5 km · spokojnie</td><td>13 km · 6:15 min/km</td><td>400 m spokojny kraul</td><td>Regeneracja</td></tr>
+        <tr><td class="week-label">T45</td><td>Symulacja częściowa: pompki + podciąg + bieg 3 km</td><td>22 km · 6:00 min/km</td><td>200 m na czas (cel: poniżej 4:10)</td><td>Etap 2 symulacji — 3 elementy sekwencyjnie</td></tr>
+        <tr><td class="week-label">T46</td><td>Bieg terenowy 12 km wzgórza</td><td>Marszobieg 20 km / plecak 10 kg</td><td>5×200 m · przerwa 25 s + pływanie pod wodą</td><td>Marszobieg zastępuje długi bieg sob.</td></tr>
+        <tr><td class="week-label">T47</td><td>Bieg wahadłowy 10×10 m + 3 km na czas</td><td>20 km · spokojnie</td><td>200 m na czas + 400 m mix</td><td>⭐ PEŁNA SYMULACJA: pompki + podciąg + bieg 3 km + pływanie 200 m</td></tr>
+        <tr class="deload-row"><td class="week-label">T48 <span class="deload-badge" style="background:#993556;color:#fff">test końcowy</span></td><td>3 km na czas (cel: poniżej 12:30)</td><td>Odpoczynek</td><td>200 m na czas (cel: poniżej 4:10–4:15)</td><td>Roczny test kontrolny — podsumowanie roku</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══ BENCH ══ -->
+<div class="tab-panel" id="tab-bench">
+  <p class="note">Aktualny poziom vs. realistyczne cele po roku treningu. Pasek = orientacyjne wypełnienie.</p>
+  <div class="bench-grid">
+    <div class="bench-card">
+      <div class="bench-label">Podciągnięcia</div>
+      <div class="bench-now">8–9 powt.</div>
+      <div class="bench-target">cel po roku: 13–15 powt.</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:55%;background:#185FA5"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Pompki</div>
+      <div class="bench-now">30+ powt.</div>
+      <div class="bench-target">cel po roku: 55–65 powt.</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:48%;background:#185FA5"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Bieg 3 km</div>
+      <div class="bench-now">13–14 min</div>
+      <div class="bench-target">cel po roku: poniżej 12:30</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:42%;background:#BA7517"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Bieg 5 km</div>
+      <div class="bench-now">~23 min</div>
+      <div class="bench-target">cel po roku: poniżej 22:00</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:45%;background:#BA7517"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Pływanie 200 m</div>
+      <div class="bench-now">~5:00 min</div>
+      <div class="bench-target">cel po roku: 4:10–4:15</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:47%;background:#1D9E75"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Marszobieg</div>
+      <div class="bench-now">brak</div>
+      <div class="bench-target">norma GROM: 50 km / 25 kg (wieloletni cel)</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:5%;background:#993556"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Dipy</div>
+      <div class="bench-now">tak</div>
+      <div class="bench-target">cel po roku: 20–25 powt.</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:50%;background:#185FA5"></div></div>
+    </div>
+    <div class="bench-card">
+      <div class="bench-label">Wejście na linę</div>
+      <div class="bench-now">tak</div>
+      <div class="bench-target">cel: szybkość + wiele wejść z rzędu</div>
+      <div class="bench-bar-bg"><div class="bench-bar" style="width:55%;background:#1D9E75"></div></div>
+    </div>
+  </div>
+  <div style="margin-top:1rem;padding:12px 14px;background:#f8f7f4;border-radius:10px;font-size:12px;color:#4a4a48;line-height:1.6">
+    <strong>Ważne:</strong> Cele po roku to realistyczne wartości dla Twojego profilu i wieku. Wymagania minimalne selekcji GROM (np. 50 km marszobieg) to cel wieloletni — nie roczny. Masz czas.
+  </div>
+</div>
+
+<!-- ══ SAFETY ══ -->
+<div class="tab-panel" id="tab-safety">
+  <div class="safety-list">
+    <div class="safety-item">
+      <div class="s-icon" style="color:#185FA5">📈</div>
+      <div>
+        <div class="s-title">Reguła 10% — żelazna zasada</div>
+        <div class="s-desc">Tygodniowy dystans biegu rośnie maksymalnie 10% w stosunku do poprzedniego tygodnia. Większy skok = przeciążenie piszczelowe, stres kości, złamania zmęczeniowe. Co 4. tydzień to deload, czyli –30% objętości.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#993556">❤️</div>
+      <div>
+        <div class="s-title">Ból to nie zmęczenie — rozróżniaj je</div>
+        <div class="s-desc">Zakwasy i ogólne zmęczenie są normalne. Ostry ból w stawie (kolano, kostka, biodro), ból jednostronny lub narastający — stop i odpoczynek. Ból nieustępujący po 48 h → lekarz sportowy. Płytki wzrostowe u 15-latka są podatniejsze na uszkodzenia niż u dorosłego.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#BA7517">🎒</div>
+      <div>
+        <div class="s-title">Obciążenia zewnętrzne — stopniowo od Etapu II</div>
+        <div class="s-desc">Biegi z plecakiem zaczynasz dopiero w miesiącu 4., od 5 kg na 8 km. Kręgosłup w wieku 15–16 lat wciąż się formuje — duże obciążenia aksjalne są ryzykowne dla dysków. Marszobieg zawsze zastępuje bieg, nigdy nie dokładasz go do tygodnia.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#1D9E75">🌙</div>
+      <div>
+        <div class="s-title">Sen — 8–9 godzin bez negocjacji</div>
+        <div class="s-desc">Hormon wzrostu wydziela się głównie w głębokich fazach snu. To kiedy mięśnie, kości i ścięgna się regenerują i rosną. Brak snu zeruje adaptację treningową skuteczniej niż cokolwiek innego.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#1D9E75">🥗</div>
+      <div>
+        <div class="s-title">Odżywianie — paliwo dla rosnącego ciała</div>
+        <div class="s-desc">1,5–2 g białka na kg masy ciała dziennie (mięso, jaja, ryby, nabiał). Węglowodany złożone przed treningiem (owsianka, ryż, makaron). Minimum 2–2,5 l wody dziennie. Nie ograniczaj kalorii — w tym wieku ciało potrzebuje energii zarówno na wzrost, jak i na trening.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#BA7517">⚠️</div>
+      <div>
+        <div class="s-title">Nie nadrabiaj pominiętych treningów</div>
+        <div class="s-desc">Jeśli tydzień wypadnie przez chorobę lub szkołę — wróć do poziomu sprzed przerwy, nie do tego który pominąłeś. Próba "odrobienia" tygodnia w jeden weekend to prosta droga do kontuzji.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#185FA5">👟</div>
+      <div>
+        <div class="s-title">Obuwie biegowe — wymień co 500–700 km</div>
+        <div class="s-desc">Bieganie w zużytym obuwiu to jeden z głównych powodów kontuzji u młodych zawodników. Analiza chodu w specjalistycznym sklepie jest bezpłatna i warto ją zrobić przed zakupem butów.</div>
+      </div>
+    </div>
+    <div class="safety-item">
+      <div class="s-icon" style="color:#993556">🏊</div>
+      <div>
+        <div class="s-title">Pływanie pod wodą — tylko pod nadzorem</div>
+        <div class="s-desc">Ćwiczenia podwodne (nurkowanie na dystans) nigdy nie wykonuj sam — zawsze z partnerem lub ratownikiem w zasięgu wzroku. Hipoksja może powodować utratę przytomności bez ostrzeżenia (shallow water blackout).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+  function togglePhase(header) {
+    const body = header.nextElementSibling;
+    const chev = header.querySelector('.phase-chevron');
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.phase-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.phase-chevron').forEach(c => c.classList.remove('open'));
+    if (!isOpen) { body.classList.add('open'); chev.classList.add('open'); }
+  }
+  function showProg(id, btn, color) {
+    document.querySelectorAll('.prog-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.prog-tab').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = '#f8f7f4';
+      b.style.color = '#6b6b68';
+      b.style.borderColor = '#e8e6df';
+    });
+    document.getElementById('prog-' + id).classList.add('active');
+    btn.classList.add('active');
+    btn.style.background = color;
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'transparent';
+  }
+</script>
+</body>
+</html>
